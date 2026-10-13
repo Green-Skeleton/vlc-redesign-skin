@@ -2,6 +2,8 @@
 
 A working VLC skin built from **Juxtopposed's "VLC Redesign" Figma Community file**. It brings the dark, orange-accented redesign to the VLC media player you already have installed.
 
+Looking for VLC 4? [vlc-redesign](https://github.com/Green-Skeleton/vlc-redesign) is a full VLC 4 build with the redesign applied to VLC's own interface.
+
 ![Player](docs/screenshots/player.png)
 
 | Sidebar + library tree | Queue | Equalizer |
