@@ -79,6 +79,7 @@ npm run package    # -> dist/VLC-Redesign.vlt
 | `tools/figma/tree.js` | Prints the node tree, so you can find component IDs. Example: `node tools/figma/tree.js 4 491:1779`. |
 | `tools/build-skin.js` | Renders every button, slider and panel from the design's components and writes `theme.xml`. The design tokens and component IDs are at the top of the file. |
 | `tools/package.js` | Packs `skin/` into the `.vlt` file. |
+| `tools/vlc4-icons.js` | For the [VLC 4 fork](https://github.com/Green-Skeleton/vlc-redesign): replaces the SVGs behind VLC 4's icon font with the design's icons. Each icon is rendered at 1024 px and traced to a single outline (potrace). Example: `node tools/vlc4-icons.js ../vlc-redesign`; then rebuild the font with VLC's `makeIconFont.py`, which needs fontforge. |
 | `docs/design/` | Reference renders of the original Figma frames. |
 
 ## Credits and licences

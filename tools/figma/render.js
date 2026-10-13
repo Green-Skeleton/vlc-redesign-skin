@@ -283,7 +283,52 @@ function renderToSvg(id) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs>${defs.join('')}</defs>${inner}</svg>`;
 }
 
-module.exports = { renderToSvg, nodes, kids, gid };
+// ---- flat outlines (for icon fonts): every visible filled/stroked shape as an
+// absolute path in the root node's coordinate space ----
+const mul = (a, b) => ({
+  m00: a.m00 * b.m00 + a.m01 * b.m10, m01: a.m00 * b.m01 + a.m01 * b.m11, m02: a.m00 * b.m02 + a.m01 * b.m12 + a.m02,
+  m10: a.m10 * b.m00 + a.m11 * b.m10, m11: a.m10 * b.m01 + a.m11 * b.m11, m12: a.m10 * b.m02 + a.m11 * b.m12 + a.m12,
+});
+const IDENT = { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 };
+function transformPath(d, m) {
+  return d.replace(/([MLQCZ])([^MLQCZ]*)/g, (_, cmd, args) => {
+    const n = args.trim() ? args.trim().split(/\s+/).map(Number) : [];
+    const out = [];
+    for (let i = 0; i < n.length; i += 2) {
+      out.push(+(m.m00 * n[i] + m.m01 * n[i + 1] + m.m02).toFixed(3), +(m.m10 * n[i] + m.m11 * n[i + 1] + m.m12).toFixed(3));
+    }
+    return cmd + out.join(' ');
+  });
+}
+const visiblePaint = paints => (paints || []).some(p => p.visible !== false && (p.opacity ?? 1) > 0 && (!p.color || p.color.a > 0));
+function collectOutlines(id) {
+  const out = [];
+  function walk(n0, path, scopes, parentM) {
+    const n = resolve(n0, path, scopes);
+    if (n.visible === false || n.mask || ['BRUSH', 'VARIABLE', 'VARIABLE_SET', 'TEXT'].includes(n.type)) return;
+    if (n.opacity === 0) return;
+    const m = n.transform ? mul(parentM, n.transform) : parentM;
+    const add = (geom, paints) => {
+      if (!geom || !visiblePaint(paints)) return;
+      for (const g of geom) out.push({ d: transformPath(blobPath(g.commandsBlob), m), evenodd: g.windingRule === 'ODD' });
+    };
+    if (n.type !== 'FRAME' && n.type !== 'SYMBOL' && n.type !== 'INSTANCE') add(n.fillGeometry, n.fillPaints);
+    add(n.strokeGeometry, n.strokePaints);
+    let children = [], childScopes = scopes;
+    if (n.type === 'INSTANCE') {
+      const sym = nodes.get(gid(n.overriddenSymbolID) || gid(n.symbolData?.symbolID));
+      const props = new Map();
+      for (const a of n.componentPropAssignments || []) props.set(gid(a.defID), a.value);
+      childScopes = [...scopes, scopeFor(n, path, props)];
+      children = sym ? kids.get(gid(sym.guid)) || [] : [];
+    } else if (n.type !== 'BOOLEAN_OPERATION') children = kids.get(gid(n0.guid)) || [];
+    for (const c of children) walk(c, [...path, keyOf(c)], childScopes, m);
+  }
+  walk({ ...nodes.get(id), transform: undefined }, [], [], IDENT);
+  return out;
+}
+
+module.exports = { renderToSvg, collectOutlines, nodes, kids, gid };
 
 if (require.main === module) {
   const { Resvg } = require('@resvg/resvg-js');
