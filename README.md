@@ -18,26 +18,35 @@ All screenshots are of VLC 3.0.21 running this skin on Windows 11.
 
 ## Install
 
-You need **VLC 3.x** (Windows, Linux or macOS builds that include the *Skins2* interface; the standard Windows installer includes it).
+You need VLC 3 on Windows or Linux (the normal download from videolan.org). VLC for macOS doesn't support skins.
 
-### Windows, one command
+1. Download **VLC-Redesign.vlt** from the [latest release](https://github.com/Green-Skeleton/vlc-redesign-skin/releases/latest).
+2. Open VLC and go to **Tools → Preferences** (or press Ctrl+P).
+3. At the top, under **Look and feel**, choose **Use custom skin**.
+4. Click **Choose...** next to **Skin resource file** and pick the `VLC-Redesign.vlt` you downloaded.
+5. Click **Save**, then close VLC and open it again.
+
+### Going back to the normal VLC look
+
+Click the gear icon in the skin to open Preferences, choose **Use native style**, click **Save** and restart VLC.
+
+### Installing with a script (optional)
+
+The release also has `install.ps1`, which does the steps above for you and backs up your VLC settings first. Close VLC, put `install.ps1` in the same folder as `VLC-Redesign.vlt`, open PowerShell in that folder and run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File install.ps1
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-This copies `dist/VLC-Redesign.vlt` to `%APPDATA%\vlc\skins\` and sets VLC to start with the skin. It backs up `vlcrc` before changing it. Close VLC before running it.
+Add `-Uninstall` to switch back to the normal look, or `-NoDefault` to copy the skin without turning it on.
 
-- `install.ps1 -NoDefault` copies the skin without making it the default.
-- `install.ps1 -Uninstall` switches VLC back to its normal interface.
+### Checking your download
 
-### Manually (any OS)
+Each release has a `SHA256SUMS.txt`. To check the file wasn't corrupted or changed, run this in PowerShell and compare the result with the line in `SHA256SUMS.txt`:
 
-1. Download [`dist/VLC-Redesign.vlt`](dist/VLC-Redesign.vlt).
-2. In VLC, open **Tools → Preferences → Interface**, choose **Use custom skin**, and select the `.vlt` file.
-3. Restart VLC.
-
-To go back, click the gear icon in the skin to open Preferences, choose **Use native style** under Interface, and restart VLC. On Windows you can also run `install.ps1 -Uninstall`.
+```powershell
+Get-FileHash .\VLC-Redesign.vlt -Algorithm SHA256
+```
 
 ## What's included
 

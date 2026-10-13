@@ -14,7 +14,9 @@ $vlcDir   = Join-Path $env:APPDATA 'vlc'
 $skinsDir = Join-Path $vlcDir 'skins'
 $vlcrc    = Join-Path $vlcDir 'vlcrc'
 $target   = Join-Path $skinsDir 'VLC-Redesign.vlt'
-$source   = Join-Path $PSScriptRoot 'dist\VLC-Redesign.vlt'
+# The skin sits next to this script in a release download, or in dist\ in the repository.
+$source   = @((Join-Path $PSScriptRoot 'VLC-Redesign.vlt'), (Join-Path $PSScriptRoot 'dist\VLC-Redesign.vlt')) |
+            Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (Get-Process vlc -ErrorAction SilentlyContinue) {
   Write-Warning 'VLC is running. Close it first, otherwise it will overwrite vlcrc on exit.'
@@ -50,7 +52,7 @@ if ($Uninstall) {
   exit 0
 }
 
-if (-not (Test-Path $source)) { throw "Missing $source - run 'npm run build' and 'npm run package' first." }
+if (-not $source) { throw "VLC-Redesign.vlt not found. Put it in the same folder as install.ps1." }
 New-Item -ItemType Directory -Force $skinsDir | Out-Null
 Copy-Item $source $target -Force
 Write-Host "Skin installed to $target"
