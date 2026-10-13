@@ -328,7 +328,32 @@ function collectOutlines(id) {
   return out;
 }
 
-module.exports = { renderToSvg, collectOutlines, nodes, kids, gid };
+// ---- visible text (with override resolution), in the root node's coordinates ----
+function collectTexts(id) {
+  const out = [];
+  function walk(n0, path, scopes, parentM) {
+    const n = resolve(n0, path, scopes);
+    if (n.visible === false || ['BRUSH', 'VARIABLE', 'VARIABLE_SET'].includes(n.type)) return;
+    const m = n.transform ? mul(parentM, n.transform) : parentM;
+    if (n.type === 'TEXT' && n.textData?.characters) {
+      out.push({ x: Math.round(m.m02), y: Math.round(m.m12), text: n.textData.characters, size: n.fontSize });
+      return;
+    }
+    let children = [], childScopes = scopes;
+    if (n.type === 'INSTANCE') {
+      const sym = nodes.get(gid(n.overriddenSymbolID) || gid(n.symbolData?.symbolID));
+      const props = new Map();
+      for (const a of n.componentPropAssignments || []) props.set(gid(a.defID), a.value);
+      childScopes = [...scopes, scopeFor(n, path, props)];
+      children = sym ? kids.get(gid(sym.guid)) || [] : [];
+    } else children = kids.get(gid(n0.guid)) || [];
+    for (const c of children) walk(c, [...path, keyOf(c)], childScopes, m);
+  }
+  walk({ ...nodes.get(id), transform: undefined }, [], [], IDENT);
+  return out.sort((a, b) => a.y - b.y || a.x - b.x);
+}
+
+module.exports = { renderToSvg, collectOutlines, collectTexts, nodes, kids, gid };
 
 if (require.main === module) {
   const { Resvg } = require('@resvg/resvg-js');
