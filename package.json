@@ -1,0 +1,20 @@
+{
+  "name": "vlc-redesign-skin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VLC 3 skin (Skins2) built from Juxtopposed's VLC Redesign Figma Community file",
+  "license": "MIT",
+  "scripts": {
+    "decode": "node tools/figma/decode.js",
+    "build": "node tools/build-skin.js",
+    "package": "node tools/package.js"
+  },
+  "dependencies": {
+    "@expo-google-fonts/inter": "0.2.3",
+    "@resvg/resvg-js": "2.6.2",
+    "fflate": "^0.8.2",
+    "fzstd": "0.1.1",
+    "kiwi-schema": "0.5.0",
+    "pako": "2.1.0"
+  }
+}
